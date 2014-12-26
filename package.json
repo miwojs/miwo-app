@@ -1,0 +1,17 @@
+{
+  "name": "miwo-latte",
+  "version": "0.0.1",
+  "description": "Miwo latte component",
+  "main": "./dist/js/miwo-latte.js",
+  "devDependencies": {
+    "gulp": "~3.8.10",
+    "gulp-util": "~3.0.1",
+    "gulp-rename": "~1.2.0",
+    "gulp-uglify": "~1.0.1",
+    "gulp-browserify": "~0.5.0",
+    "gulp-plumber": "~0.6.6",
+    "caching-coffeeify": "~0.4.0",
+    "run-sequence": "~1.0.1",
+    "gulp-optimizebrowserify": "~0.0.1"
+  }
+}
