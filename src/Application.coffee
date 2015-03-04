@@ -31,10 +31,14 @@ class Application extends Miwo.Object
 	run: (render = null) ->
 		# startup controllers
 		for name in @runControllers
-			@getController(name).startup()
-
-		# auto render viewport
-		if render then @render(render)
+			@getController name, (controller)=>
+				# mark controllers as loaded
+				@runControllers.erase(controller.name)
+				# check if all controllers are loaded
+				if @runControllers.length is 0
+					# auto render viewport
+					@render(render) if render
+				return
 		return
 
 
@@ -60,11 +64,16 @@ class Application extends Miwo.Object
 		return
 
 
-	getController: (name) ->
-		if !@controllers[name]
-			@controllers[name] = @controllerFactory.create(name)
-			@controllers[name].application = this
-		return @controllers[name]
+	getController: (name, onReady) ->
+		controller = @controllers[name]
+		if !controller
+			controller = @controllers[name] = @controllerFactory.create(name)
+			controller.application = this
+			controller.onStartup(onReady)
+			controller.initialize()
+		else
+			controller.onStartup(onReady)
+		return
 
 
 	control: (target, events) ->
@@ -75,16 +84,18 @@ class Application extends Miwo.Object
 		return
 
 
-	getViewport: () ->
+	getViewport: ->
 		return @injector.get('viewport')
 
 
-	getRouter: () ->
+	getRouter: ->
 		return @injector.get('miwo.router')
 
 
 	execute: (request) ->
-		@getController(request.controller).execute(request)
+		@getController request.controller, (controller)=>
+			controller.execute(request)
+			return
 		return
 
 
@@ -93,13 +104,15 @@ class Application extends Miwo.Object
 		return
 
 
-	redirect: (request) ->
-		document.location.hash = @getRouter().constructHash(request)
+	redirect: (request, unique) ->
+		request.params._rid = Math.random().toString(36).substring(4,10) if unique
+		hash = @getRouter().constructHash(request)
+		document.location.hash = hash
 		return
 
 
 	executeRequestByHash: ->
-		hash = document.location.hash.substr(1).toLowerCase()
+		hash = document.location.hash.substr(1)
 		if !hash && !@autoCanonicalize
 			return
 

@@ -9,6 +9,10 @@ class Viewport extends Miwo.Container
 	componentCls: 'miwo-viewport'
 	contentEl: 'div'
 	view: null
+	animation: false
+	animationFxIn: 'fadeIn'
+	animationFxOut: 'fadeOut'
+	animationDuration: 1000
 
 
 	afterInit: ->
@@ -37,14 +41,54 @@ class Viewport extends Miwo.Container
 		return @content.add(@formatName(name), component)
 
 
-	activateView: (name) ->
-		if @view
-			@view.hide()
+	activateView: (name, callback) ->
+		if !@view # first view show without animation
+			@view = @getView(name)
+			@view.setActive(true)
+			@view.show()
+			callback()
+			return
+		@hideView =>
 			@view.setActive(false)
-		@view = @getView(name)
-		@view.show()
-		@view.setActive(true)
-		return @view
+			@view = @getView(name)
+			@showView =>
+				@view.setActive(true)
+				callback(@view)
+				return
+			return
+		return
+
+
+	hideView: (callback) ->
+		if !@view
+			callback()
+		if !@animation
+			@view.hide()
+			callback()
+		else
+			@view.el.addClass('animated').addClass(@animationFxOut)
+			setTimeout =>
+				@view.hide()
+				@view.el.removeClass('animated').removeClass(@animationFxOut)
+				callback()
+				return
+			, @animationDuration
+		return
+
+
+	showView: (callback) ->
+		if !@animation
+			@view.show()
+			callback()
+		else
+			@view.el.addClass('animated').addClass(@animationFxIn)
+			@view.show()
+			callback()
+			setTimeout =>
+				@view.el.removeClass('animated').removeClass(@animationFxIn)
+				return
+			, @animationDuration
+		return
 
 
 	formatName: (name) ->

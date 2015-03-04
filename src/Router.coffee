@@ -11,7 +11,7 @@ class Router extends Miwo.Object
 		match = hash.match(/^(([a-zA-Z]*)(\:([a-z][a-zA-Z]+))?(\?(.*))?)?$/)
 		controller = match[2] or @controller
 		action = match[4] or @action
-		params = (if match[6] then match[6].parseQueryString() else {})
+		params = (if match[6] then @parseQuery(match[6]) else {})
 		return new Request(controller, action, params)
 
 
@@ -23,6 +23,14 @@ class Router extends Miwo.Object
 				query = Object.toQueryString(request.params)
 				hash += "?" + query  if query
 		return hash
+
+
+	parseQuery: (string) ->
+		query = {}
+		for item in string.split('&')
+			parts = item.split('=')
+			query[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1])
+		return query
 
 
 module.exports = Router

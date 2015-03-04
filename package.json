@@ -1,8 +1,7 @@
 {
-  "name": "miwo-latte",
+  "name": "miwo-app",
   "version": "0.0.1",
-  "description": "Miwo latte component",
-  "main": "./dist/js/miwo-latte.js",
+  "description": "Miwo app component",
   "devDependencies": {
     "gulp": "~3.8.10",
     "gulp-util": "~3.0.1",
