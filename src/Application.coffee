@@ -100,11 +100,28 @@ class Application extends Miwo.Object
 
 
 	forward: (request) ->
-		setTimeout((() => @execute(request)), 1)
+		miwo.async => @execute(request)
 		return
 
 
 	redirect: (request, unique) ->
+		if Type.isString(request) && request.charAt(0) is '#'
+			# convert hash to request
+			request = @getRouter().constructRequest(request.replace(/^#/, ''))
+		if !@request
+			# execute request
+			@redirectRequest(request, unique)
+		else
+			# finish request by controller
+			@getController @request.controller, (controller)=>
+				controller.terminate @request, =>
+					@redirectRequest(request, unique)
+					return
+				return
+		return
+
+
+	redirectRequest: (request, unique) ->
 		request.params._rid = Math.random().toString(36).substring(4,10) if unique
 		hash = @getRouter().constructHash(request)
 		document.location.hash = hash

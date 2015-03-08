@@ -141,12 +141,11 @@ class Controller extends Miwo.Object
 	# @protected
 	# @param {Miwo.app.Request} request
 	execute: (request) ->
-		# call action method
-		actionName = @formatMethodName(request.action, 'action')
-		if !this[actionName]
+		methodName = @formatMethodName(request.action, 'show')
+		if !this[methodName]
 			@executeDone(request)
 			return
-		this[actionName] request, (view)=>
+		this[methodName] request, (view)=>
 			@executeDone(request, view)
 			return
 		return
@@ -161,11 +160,29 @@ class Controller extends Miwo.Object
 
 		# call render method
 		viewName = request.action if !viewName
+		request.view = viewName
 		view = @getView(viewName || request.action)
-		view.request = request # store last viewed request
+		view.request = request # store last request
+		@application.request = request # store last request
+
 		@getViewport().activateView view.viewName, =>
-			renderName = @formatMethodName(viewName, 'render')
-			this[renderName](request, view) if this[renderName]
+			methodName = @formatMethodName(viewName, 'render')
+			this[methodName](request, view) if this[methodName]
+			return
+		return
+
+
+	# Terminate request (called by application, when new request need to be executed)
+	# @private
+	# @param {Miwo.app.Request} request
+	# @param {Function} callback
+	terminate: (request, callback) ->
+		methodName = @formatMethodName(request.view, 'hide')
+		if !this[methodName]
+			miwo.async => callback()
+			return
+		this[methodName] request, @getView(request.view), =>
+			miwo.async => callback()
 			return
 		return
 
