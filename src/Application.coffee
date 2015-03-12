@@ -124,6 +124,7 @@ class Application extends Miwo.Object
 	redirectRequest: (request, unique) ->
 		request.params._rid = Math.random().toString(36).substring(4,10) if unique
 		hash = @getRouter().constructHash(request)
+		@emit('request', this, request, hash)
 		document.location.hash = hash
 		return
 

@@ -17,7 +17,7 @@ class Controller extends Miwo.Object
 
 
 	@registerView: (name, klass) ->
-		@prototype['create'+name.capitalize()+'View'] = (config)->
+		@prototype['create'+name.capitalize()] = (config)->
 			return new klass(config)
 		return
 
@@ -53,6 +53,7 @@ class Controller extends Miwo.Object
 	# Internal initialization of controller
 	# @protected
 	startup: (done) ->
+		done()
 		return
 
 
@@ -116,6 +117,7 @@ class Controller extends Miwo.Object
 	# @param {String} code
 	# @param {Object} params
 	forward: (code, params) ->
+		@request.executed = true  if @request # break process request
 		@application.forward(@createRequest(code, params))
 		return
 
@@ -125,7 +127,9 @@ class Controller extends Miwo.Object
 	# @param {Object} params
 	# @param {Boolean} unique
 	redirect: (code, params, unique) ->
-		@application.redirect(@createRequest(code, params), unique)
+		@request.executed = true  if @request # break process request
+		request = if Type.isString(code) then @createRequest(code, params) else code
+		@application.redirect(request, unique)
 		return
 
 
@@ -141,6 +145,7 @@ class Controller extends Miwo.Object
 	# @protected
 	# @param {Miwo.app.Request} request
 	execute: (request) ->
+		@request = request
 		methodName = @formatMethodName(request.action, 'show')
 		if !this[methodName]
 			@executeDone(request)
@@ -201,16 +206,16 @@ class Controller extends Miwo.Object
 
 
 	createView: (name) ->
-		factory = 'create'+name.capitalize()+'View'
+		factory = 'create'+name.capitalize()
 		if !this[factory]
 			throw new Error("View #{name} has no factory method. You must define #{factory} method in controller #{this}")
-		view = this[factory]
-			isView: true
-			visible: false
-			viewName: @formatViewName(name)
-			id: @name+name.capitalize()+'View'
+		view = this[factory]()
 		if view !instanceof Miwo.Component
 			throw new Error("Created view should by instance of Miwo.Component")
+		view.isView = true
+		view.visible = false
+		view.viewName = @formatViewName(name)
+		view.setId(@name+name.capitalize())
 		return view
 
 

@@ -1,18 +1,13 @@
 class ContentContainer extends Miwo.Container
 
-	componentCls: 'miwo-views'
+	baseCls: 'miwo-views'
 	role: 'main'
+	contentEl: 'div'
 
 
 	addedComponent: (component) ->
 		super(component)
-		component.el.addClass('miwo-views-item')
-		return
-
-
-	doRender: ->
-		super
-		@el.setStyle('overflow', 'auto')
+		component.el.addClass(@getBaseCls('item'))
 		return
 
 

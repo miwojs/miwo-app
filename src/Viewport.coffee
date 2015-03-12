@@ -6,7 +6,7 @@ class Viewport extends Miwo.Container
 	id: 'viewport'
 	name: 'viewport'
 	layout: 'absolute'
-	componentCls: 'miwo-viewport'
+	baseCls: 'miwo-viewport'
 	contentEl: 'div'
 	view: null
 	animation: false
